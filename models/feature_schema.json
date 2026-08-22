@@ -1,6 +1,6 @@
 {
-  "model_version": "2",
-  "algorithm": "b28f1a0e13b24147b69c1fdf1986a5b7",
+  "model_version": "3",
+  "algorithm": "c8de60c2a10e4e3c90852ff3c50c2bf7",
   "required_input_columns": [
     "recency",
     "frequency",
