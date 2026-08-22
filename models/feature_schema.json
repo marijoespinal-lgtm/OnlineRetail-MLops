@@ -1,0 +1,14 @@
+{
+  "model_version": "2",
+  "algorithm": "b28f1a0e13b24147b69c1fdf1986a5b7",
+  "required_input_columns": [
+    "recency",
+    "frequency",
+    "monetary",
+    "monetary_std",
+    "return_rate",
+    "unique_products",
+    "weekend_purchase_pct"
+  ],
+  "note": "El input debe traer estas columnas SIN escalar; la API debe aplicar scaler.pkl antes de llamar a model.predict()."
+}

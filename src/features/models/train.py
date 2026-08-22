@@ -13,8 +13,12 @@ Uso:
 """
 
 import argparse
+import json
 import logging
+import tempfile
+from pathlib import Path
 
+import joblib
 import matplotlib.pyplot as plt
 import mlflow
 import mlflow.sklearn
@@ -55,7 +59,7 @@ def plot_cluster_distribution(labels, run_name):
     ax.set_title(f"Distribución de clusters - {run_name}")
     ax.set_xlabel("Cluster")
     ax.set_ylabel("Cantidad de clientes")
-    path = f"/tmp/cluster_dist_{run_name}.png"
+    path = f"{tempfile.gettempdir()}/cluster_dist_{run_name}.png"
     fig.savefig(path, bbox_inches="tight")
     plt.close(fig)
     return path
@@ -88,7 +92,7 @@ def run_experiment(name, model, X, feature_set, params):
         mlflow.sklearn.log_model(model, artifact_path="model")
 
         logger.info("%s -> silhouette=%s, davies_bouldin=%s, clusters=%s", name, sil, db, n_clusters_found)
-        return mlflow.active_run().info.run_id, sil
+        return mlflow.active_run().info.run_id, sil, model
 
 
 def main():
@@ -105,24 +109,28 @@ def main():
     feature_set = ",".join(feature_cols)
 
     results = {}
+    models = {}
 
     # 1. K-Means
     for k in [3, 4, 5]:
         model = KMeans(n_clusters=k, random_state=RANDOM_SEED, n_init=10)
-        run_id, sil = run_experiment(f"kmeans_k{k}", model, X, feature_set, {"n_clusters": k})
+        run_id, sil, fitted_model = run_experiment(f"kmeans_k{k}", model, X, feature_set, {"n_clusters": k})
         results[run_id] = sil or -1
+        models[run_id] = fitted_model
 
     # 2. DBSCAN
     for eps in [0.5, 0.8]:
         model = DBSCAN(eps=eps, min_samples=5)
-        run_id, sil = run_experiment(f"dbscan_eps{eps}", model, X, feature_set, {"eps": eps, "min_samples": 5})
+        run_id, sil, fitted_model = run_experiment(f"dbscan_eps{eps}", model, X, feature_set, {"eps": eps, "min_samples": 5})
         results[run_id] = sil or -1
+        models[run_id] = fitted_model
 
     # 3. Agglomerative Clustering
     for k in [3, 4, 5]:
         model = AgglomerativeClustering(n_clusters=k)
-        run_id, sil = run_experiment(f"agglomerative_k{k}", model, X, feature_set, {"n_clusters": k})
+        run_id, sil, fitted_model = run_experiment(f"agglomerative_k{k}", model, X, feature_set, {"n_clusters": k})
         results[run_id] = sil or -1
+        models[run_id] = fitted_model
 
     best_run_id = max(results, key=results.get)
     logger.info("Mejor run: %s (silhouette=%.4f)", best_run_id, results[best_run_id])
@@ -141,6 +149,38 @@ def main():
     logger.info(
         "Modelo version %s registrado y promovido a Production", registered.version
     )
+
+    # --- Exportar copias planas para que Integrante 3 las use en la API ---
+    # (no todos van a correr MLflow localmente; esto evita esa dependencia)
+    export_dir = Path("models")
+    export_dir.mkdir(exist_ok=True)
+
+    joblib.dump(models[best_run_id], export_dir / "customer_segmentation_model.pkl")
+    logger.info("Modelo exportado a %s", export_dir / "customer_segmentation_model.pkl")
+
+    # Copiar tambien el scaler que genero build_features.py, si existe
+    scaler_source = Path("models/scaler.pkl")
+    if scaler_source.exists():
+        logger.info("scaler.pkl ya esta en %s (generado por build_features.py)", scaler_source)
+    else:
+        logger.warning(
+            "No se encontro models/scaler.pkl. Corre build_features.py primero "
+            "para generarlo (Integrante 3 lo necesita junto con el modelo)."
+        )
+
+    # Contrato de columnas para la API (Integrante 3 lo necesita)
+    contract = {
+        "model_version": str(registered.version),
+        "algorithm": best_run_id,
+        "required_input_columns": feature_cols,
+        "note": (
+            "El input debe traer estas columnas SIN escalar; la API debe aplicar "
+            "scaler.pkl antes de llamar a model.predict()."
+        ),
+    }
+    with open(export_dir / "feature_schema.json", "w") as f:
+        json.dump(contract, f, indent=2)
+    logger.info("Contrato de columnas guardado en %s", export_dir / "feature_schema.json")
 
 
 if __name__ == "__main__":
