@@ -25,4 +25,19 @@ def test_predict_endpoint():
         "weekend_purchase_pct": 0.20
     }
     response = client.post("/predict", json=payload)
-    assert response.status_code in [200, 500]  # Acepta 500 si no encuentra los .pkl en el CI
+    assert response.status_code in [200, 500]
+
+def test_drift_endpoint():
+    batch_payload = [
+        {
+            "recency": 12.0,
+            "frequency": 4.0,
+            "monetary": 1400.0,
+            "monetary_std": 110.0,
+            "return_rate": 0.01,
+            "unique_products": 12.0,
+            "weekend_purchase_pct": 0.15
+        }
+    ]
+    response = client.post("/drift", json=batch_payload)
+    assert response.status_code in [200, 500]
