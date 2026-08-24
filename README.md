@@ -49,6 +49,14 @@ GET,/health,Verifica el estado del servicio y la carga del modelo/baseline
 POST,/predict,Recibe métricas RFM y clasifica al cliente en un clúster
 POST,/drift,Recibe registros recientes y calcula el PSI contra el dataset baseline
 
+## 📌 Endpoints de la API
+
+| Método | Endpoint | Descripción |
+| :--- | :--- | :--- |
+| **GET** | `/health` | Verifica el estado del servicio y la carga del modelo/baseline |
+| **POST** | `/predict` | Recibe métricas RFM y clasifica al cliente en un clúster |
+| **POST** | `/drift` | Recibe registros recientes y calcula el PSI contra el dataset baseline |
+
 ## 📊 Monitoreo del Sistema (3 Dimensiones)
 
 1. **Data Drift (Covariate Shift):** Monitoreado en tiempo real a través del endpoint `/drift` utilizando el cálculo del **Population Stability Index (PSI)** sobre las variables de entrada.
