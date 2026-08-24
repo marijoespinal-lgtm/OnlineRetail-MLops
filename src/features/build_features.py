@@ -1,7 +1,7 @@
 """
 build_features.py
 ------------------
-Integrante 2 - ML & Feature Engineering
+- ML & Feature Engineering
 
 Transforma el dataset transaccional limpio (salida de Integrante 1,
 normalmente en data/processed/clean_data.csv) en un dataset a nivel
