@@ -1,0 +1,21 @@
+# Cache de Python y Bytecode
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+.pytest_cache/
+
+# Entornos virtuales
+venv/
+env/
+.venv/
+
+# Archivos de sistema operativos
+.DS_Store
+Thumbs.db
+
+# Datos y MLflow local
+data/raw/*
+!data/raw/.gitkeep
+mlruns/
+.env
