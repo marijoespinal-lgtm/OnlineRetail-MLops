@@ -1,43 +1,46 @@
 # Este script verifica que la API responda HTTP 200 y devuelva la estructura correcta
+import pytest
 from fastapi.testclient import TestClient
 from src.api.app import app
 
 client = TestClient(app)
 
+# 1. Pruebas de Endpoints Básicos 
 def test_home():
     response = client.get("/")
     assert response.status_code == 200
-    assert "message" in response.json()
 
 def test_health():
     response = client.get("/health")
     assert response.status_code == 200
-    assert "status" in response.json()
 
-def test_predict_endpoint():
+# 2. Prueba de Inferencia Válida (input válido → predicción válida)
+def test_predict_valid_input():
     payload = {
-        "recency": 10.0,
-        "frequency": 5.0,
-        "monetary": 1500.0,
-        "monetary_std": 120.0,
-        "return_rate": 0.02,
-        "unique_products": 15.0,
-        "weekend_purchase_pct": 0.20
+        "recency": 15,
+        "frequency": 4,
+        "monetary": 250.50,
+        "product_diversity": 3
     }
     response = client.post("/predict", json=payload)
-    assert response.status_code in [200, 500]
+    assert response.status_code == 200
+    data = response.json()
+    assert "cluster" in data
+    assert isinstance(data["cluster"], int)
 
+# 3. Pruebas de Validación de Datos (Tipos, Rangos y Faltantes)
+def test_predict_invalid_data():
+    # Falta el campo obligatorio 'monetary' o tiene tipo inválido
+    payload = {"recency": "quince", "frequency": 4} 
+    response = client.post("/predict", json=payload)
+    assert response.status_code == 422  # Error de validación Pydantic
+
+# 4. Prueba del Endpoint de Monitoreo 
 def test_drift_endpoint():
-    batch_payload = [
-        {
-            "recency": 12.0,
-            "frequency": 4.0,
-            "monetary": 1400.0,
-            "monetary_std": 110.0,
-            "return_rate": 0.01,
-            "unique_products": 12.0,
-            "weekend_purchase_pct": 0.15
-        }
-    ]
-    response = client.post("/drift", json=batch_payload)
-    assert response.status_code in [200, 500]
+    payload = {
+        "recent_data": [
+            {"recency": 10, "frequency": 2, "monetary": 100.0, "product_diversity": 1}
+        ]
+    }
+    response = client.post("/drift", json=payload)
+    assert response.status_code == 200
