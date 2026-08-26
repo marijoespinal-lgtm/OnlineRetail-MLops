@@ -1,14 +1,10 @@
 {
-  "model_version": "4",
-  "algorithm": "5290e12a4a7540d49ac5898cc6198cca",
+  "model_version": "5",
+  "feature_set": "RFM",
   "required_input_columns": [
     "recency",
     "frequency",
-    "monetary",
-    "monetary_std",
-    "return_rate",
-    "unique_products",
-    "weekend_purchase_pct"
+    "monetary"
   ],
-  "note": "El input debe traer estas columnas SIN escalar; la API debe aplicar scaler.pkl antes de llamar a model.predict()."
+  "note": "El input debe traer estas columnas SIN escalar. La API debe cargar customer_segmentation_bundle.pkl y usar bundle['scaler'] y bundle['feature_columns_scaled'] para transformar antes de llamar a bundle['model'].predict()."
 }
