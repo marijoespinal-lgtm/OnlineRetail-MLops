@@ -1,0 +1,4 @@
+cluster,recency,frequency,monetary,tenure,ipt_mean,ipt_std,avg_ticket,monetary_std,return_rate,unique_products,weekend_purchase_pct,total_items,avg_unit_price,product_concentration,n_clientes
+0,134.06,1.36,425.32,174.95,40.72,0.0,315.25,13.23,0.0,27.31,0.13,255.44,3.31,0.23,2257
+1,30.36,12.27,6958.82,302.75,34.79,26.04,609.62,37.12,0.0,151.67,0.12,3964.53,3.07,0.1,862
+2,59.3,4.0,1213.07,256.47,68.34,49.9,311.52,40.55,0.0,61.41,0.15,679.95,6.11,0.17,1211
