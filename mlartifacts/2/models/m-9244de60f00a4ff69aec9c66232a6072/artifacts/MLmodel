@@ -1,0 +1,23 @@
+artifact_path: file:E:/Modulo 5/OnlineRetail-MLops/mlartifacts/2/models/m-9244de60f00a4ff69aec9c66232a6072/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.skops
+    predict_fn: predict
+    python_version: 3.14.6
+  sklearn:
+    code: null
+    pickled_model: model.skops
+    serialization_format: skops
+    sklearn_version: 1.9.0
+    skops_trusted_types: null
+mlflow_version: 3.15.1
+model_id: m-9244de60f00a4ff69aec9c66232a6072
+model_size_bytes: 26289
+model_uuid: m-9244de60f00a4ff69aec9c66232a6072
+prompts: null
+run_id: bb3ae108a43e47e7a92457b4a3f5b2ae
+utc_time_created: '2026-08-27 06:20:23.148036'
