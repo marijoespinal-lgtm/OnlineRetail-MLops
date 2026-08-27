@@ -1,0 +1,15 @@
+artifact_path: file:E:/Modulo 5/OnlineRetail-MLops/mlruns/1/models/m-dd078a6ff9c14739be56d1dd034f29de/artifacts
+flavors:
+  sklearn:
+    code: null
+    pickled_model: model.skops
+    serialization_format: skops
+    sklearn_version: 1.9.0
+    skops_trusted_types: null
+mlflow_version: 3.15.1
+model_id: m-dd078a6ff9c14739be56d1dd034f29de
+model_size_bytes: 110665
+model_uuid: m-dd078a6ff9c14739be56d1dd034f29de
+prompts: null
+run_id: 2c1713f0d0ee4d6397aa455ffb0daaca
+utc_time_created: '2026-08-26 23:05:27.769494'
