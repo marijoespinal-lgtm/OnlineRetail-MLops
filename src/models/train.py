@@ -1,7 +1,7 @@
 """
 train.py
 --------
-- ML & Experiment Tracking
+Integrante 2 - ML & Experiment Tracking
 
 Compara clustering usando 3 conjuntos de variables (RFM / RFM+ /
 Behavioral, definidos en src/features/feature_sets.py) x 3 algoritmos
@@ -25,6 +25,8 @@ import tempfile
 from pathlib import Path
 
 import joblib
+import matplotlib
+matplotlib.use("Agg")  # sin ventanas graficas -- evita los errores de tkinter en Windows
 import matplotlib.pyplot as plt
 import mlflow
 import mlflow.sklearn
@@ -41,8 +43,15 @@ from src.models.validation import validate_candidate  # noqa: E402
 logging.basicConfig(level=logging.INFO, format="%(asctime)s | %(levelname)s | %(message)s")
 logger = logging.getLogger(__name__)
 
+# IMPORTANTE: apunta explicitamente al servidor de MLflow (mlflow server
+# --host 127.0.0.1 --port 5000). Sin esto, train.py escribe a una carpeta
+# local ./mlruns que el servidor NUNCA lee, y los runs nuevos no aparecen
+# en la interfaz web aunque el script diga que corrio bien.
+# El servidor debe estar corriendo ANTES de ejecutar este script.
+mlflow.set_tracking_uri("http://127.0.0.1:5000")
+
 RANDOM_SEED = 42
-EXPERIMENT_NAME = "customer_segmentation"
+EXPERIMENT_NAME = "customer_segmentation_v2"
 DATA_VERSION = "v2_rfm_plus_behavioral"  # subir version cuando cambien las features
 MODEL_REGISTRY_NAME = "customer_segmentation_model"
 

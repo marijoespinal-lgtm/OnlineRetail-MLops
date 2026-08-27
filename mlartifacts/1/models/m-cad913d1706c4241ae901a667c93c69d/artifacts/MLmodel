@@ -1,0 +1,23 @@
+artifact_path: file:E:/Modulo 5/OnlineRetail-MLops/mlartifacts/1/models/m-cad913d1706c4241ae901a667c93c69d/artifacts
+flavors:
+  python_function:
+    env:
+      conda: conda.yaml
+      virtualenv: python_env.yaml
+    loader_module: mlflow.sklearn
+    model_path: model.skops
+    predict_fn: predict
+    python_version: 3.14.6
+  sklearn:
+    code: null
+    pickled_model: model.skops
+    serialization_format: skops
+    sklearn_version: 1.9.0
+    skops_trusted_types: null
+mlflow_version: 3.15.1
+model_id: m-cad913d1706c4241ae901a667c93c69d
+model_size_bytes: 23230
+model_uuid: m-cad913d1706c4241ae901a667c93c69d
+prompts: null
+run_id: 85b38471ac04441bae58ad9159148d7a
+utc_time_created: '2026-08-27 02:13:40.645148'
