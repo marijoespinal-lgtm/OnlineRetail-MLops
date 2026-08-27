@@ -13,9 +13,3 @@ env/
 # Archivos de sistema operativos
 .DS_Store
 Thumbs.db
-
-# Datos y MLflow local
-data/raw/*
-!data/raw/.gitkeep
-mlruns/
-.env
