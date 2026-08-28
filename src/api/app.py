@@ -16,23 +16,18 @@ class CustomerData(BaseModel):
     recency: float
     frequency: float
     monetary: float
-    monetary_std: float
-    return_rate: float
-    unique_products: float
-    weekend_purchase_pct: float
+   
 
 # Rutas de los artefactos del modelo y dataset baseline
-MODEL_PATH = "models/customer_segmentation_model.pkl"
-SCALER_PATH = "models/scaler.pkl"
+MODEL_PATH = "models/customer_segmentation_bundle.pkl"
 BASELINE_PATH = "data/processed/customer_features.csv"
 
 model = None
 scaler = None
 baseline_df = None
 
-if os.path.exists(MODEL_PATH) and os.path.exists(SCALER_PATH):
+if os.path.exists(MODEL_PATH):
     model = joblib.load(MODEL_PATH)
-    scaler = joblib.load(SCALER_PATH)
 
 
 if os.path.exists(BASELINE_PATH):
@@ -79,17 +74,23 @@ def estado_servicio():
 
 @app.post("/predecir")
 def predecir_cluster(data: CustomerData):
-    if model is None or scaler is None:
-        raise HTTPException(status_code=500, detail="El modelo o el escalador no están disponibles")
-    
+    if model is None:
+        raise HTTPException(status_code=500, detail="El modelo no está disponible")
+
+    # 1.DataFrame con los nombres exactos
     input_df = pd.DataFrame([data.dict()])
-    scaled_data = scaler.transform(input_df)
-    cluster = model.predict(scaled_data)
-    
-    return {
-        "cluster": int(cluster[0]),
-        "input_summary": data.dict()
-    }
+
+    if isinstance(model, dict) and "pipeline" in model:
+        pred = model["pipeline"].predict(input_df)
+    elif isinstance(model, dict) and "model" in model:
+        pred = model["model"].predict(input_df)
+    else:
+        pred = model.predict(input_df)
+
+    # Asegurar la conversión a int nativo de Python
+    cluster_id = int(pred[0])
+
+    return {"cluster": cluster_id}
 
 @app.post("/deriva")
 def analizar_deriva(batch_data: list[CustomerData]):
