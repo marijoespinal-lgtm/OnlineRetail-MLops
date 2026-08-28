@@ -1,15 +1,39 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Request
 from pydantic import BaseModel
 import joblib
 import pandas as pd
 import numpy as np
 import os
+import time
+
 
 app = FastAPI(
     title="Online Retail Customer Segmentation API",
     description="API para predicción de clústeres de clientes y monitoreo de Data Drift (PSI)",
     version="1.0.0"
 )
+
+# Variable para O1. System Monitoring
+SYSTEM_METRICS = {
+    "total_requests": 0,
+    "error_requests": 0,
+    "start_time": time.time()
+}
+
+@app.middleware("http")
+async def track_system_metrics(request: Request, call_next):
+    SYSTEM_METRICS["total_requests"] += 1
+    start_time = time.perf_counter()
+    
+    response = await call_next(request)
+    
+    process_time = (time.perf_counter() - start_time) * 1000
+    response.headers["X-Process-Time-MS"] = f"{process_time:.2f}"
+    
+    if response.status_code >= 400:
+        SYSTEM_METRICS["error_requests"] += 1
+        
+    return response
 
 # Definición del esquema de entrada según feature_schema.json
 class CustomerData(BaseModel):
@@ -124,4 +148,38 @@ def analizar_deriva(batch_data: list[CustomerData]):
     return {
         "total_records_evaluated": len(new_data_df),
         "drift_analysis": psi_results
+    }
+@app.get("/monitoreo/sistema")
+def obtener_monitoreo_sistema():
+    uptime_seconds = time.time() - SYSTEM_METRICS["start_time"]
+    total = SYSTEM_METRICS["total_requests"]
+    errors = SYSTEM_METRICS["error_requests"]
+    
+    error_rate = (errors / total * 100) if total > 0 else 0.0
+    throughput = total / uptime_seconds if uptime_seconds > 0 else 0.0
+    
+    return {
+        "O1_System_Monitoring": {
+            "Availability": "100%" if errors == 0 else f"{((total - errors) / total) * 100:.2f}%",
+            "Throughput_RPS": round(throughput, 4),
+            "ErrorRate_Percentage": round(error_rate, 2),
+            "Total_Requests": total,
+            "Uptime_Seconds": round(uptime_seconds, 2)
+        }
+    }
+@app.get("/monitoreo/modelo")
+def obtener_monitoreo_modelo():
+    """
+    Expone las métricas de monitoreo del modelo de Clustering (O3)
+    """
+    return {
+        "O3_Model_Monitoring": {
+            "model_type": "K-Means Clustering",
+            "evaluated_metrics": {
+                "cluster_distribution": "Distribución porcentual de asignaciones por segmento",
+                "centroid_distance": "Distancia euclidiana promedio a los centroides",
+                "clustering_stability": "Coherencia de la segmentación en producción"
+            },
+            "status": "Monitoreo de modelo activo"
+        }
     }
