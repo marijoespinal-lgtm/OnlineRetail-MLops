@@ -1,3 +1,8 @@
+"""
+train.py
+--------
+Integrante 2 - ML & Experiment Tracking
+
 Compara clustering usando 3 conjuntos de variables (RFM / RFM+ /
 Behavioral, definidos en src/features/feature_sets.py) x 3 algoritmos
 (K-Means, Gaussian Mixture, Agglomerative Clustering), registrando
@@ -278,5 +283,3 @@ def main():
 
 if __name__ == "__main__":
     main()
-
-    ...
