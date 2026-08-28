@@ -109,8 +109,9 @@ def analizar_deriva(batch_data: list[CustomerData]):
                 status = "Deriva moderada"
             else:
                 status = "Deriva significativa (Drift detectado)"
+    
 
-psi_results[col] = {
+        psi_results[col] = {
             "psi": round(psi_val, 4),
             "status": status
         }
