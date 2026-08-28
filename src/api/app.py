@@ -34,6 +34,7 @@ if os.path.exists(MODEL_PATH) and os.path.exists(SCALER_PATH):
     model = joblib.load(MODEL_PATH)
     scaler = joblib.load(SCALER_PATH)
 
+
 if os.path.exists(BASELINE_PATH):
     baseline_df = pd.read_csv(BASELINE_PATH)
 
@@ -64,20 +65,20 @@ def calculate_psi(expected, actual, num_buckets=10):
     return float(psi_value)
 
 @app.get("/")
-def home():
-    return {"message": "API de Segmentación de Clientes Online Retail está activa"}
+def inicio():
+    return {"mensaje": "API de Segmentación de Clientes Online Retail está activa"}
 
-@app.get("/health")
-def health_check():
+@app.get("/estado")
+def estado_servicio():
     return {
-        "status": "healthy",
-        "model_loaded": model is not None,
-        "scaler_loaded": scaler is not None,
-        "baseline_data_loaded": baseline_df is not None
+        "estado": "activo",
+        "modelo_cargado": model is not None,
+        "escalador_cargado": scaler is not None,
+        "datos_base_cargados": baseline_df is not None
     }
 
-@app.post("/predict")
-def predict_cluster(data: CustomerData):
+@app.post("/predecir")
+def predecir_cluster(data: CustomerData):
     if model is None or scaler is None:
         raise HTTPException(status_code=500, detail="El modelo o el escalador no están disponibles")
     
@@ -90,10 +91,10 @@ def predict_cluster(data: CustomerData):
         "input_summary": data.dict()
     }
 
-@app.post("/drift")
-def check_drift(batch_data: list[CustomerData]):
+@app.post("/deriva")
+def analizar_deriva(batch_data: list[CustomerData]):
     if baseline_df is None:
-        raise HTTPException(status_code=500, detail="No se encontró el dataset baseline de María (customer_features.csv)")
+        raise HTTPException(status_code=500, detail="No se encontró el dataset baseline")
     
     new_data_df = pd.DataFrame([item.dict() for item in batch_data])
     psi_results = {}
@@ -108,12 +109,12 @@ def check_drift(batch_data: list[CustomerData]):
                 status = "Deriva moderada"
             else:
                 status = "Deriva significativa (Drift detectado)"
-                
-            psi_results[col] = {
-                "psi": round(psi_val, 4),
-                "status": status
-            }
-            
+
+psi_results[col] = {
+            "psi": round(psi_val, 4),
+            "status": status
+        }
+
     return {
         "total_records_evaluated": len(new_data_df),
         "drift_analysis": psi_results
