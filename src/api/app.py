@@ -21,6 +21,7 @@ class CustomerData(BaseModel):
 # Rutas de los artefactos del modelo y dataset baseline
 MODEL_PATH = "models/customer_segmentation_bundle.pkl"
 BASELINE_PATH = "data/processed/customer_features.csv"
+MODEL_VERSION = "3"
 
 model = None
 scaler = None
@@ -77,9 +78,10 @@ def predecir_cluster(data: CustomerData):
     if model is None:
         raise HTTPException(status_code=500, detail="El modelo no está disponible")
 
-    # 1.DataFrame con los nombres exactos
+    # 1. Crear el DataFrame con el diccionario de entrada
     input_df = pd.DataFrame([data.dict()])
 
+    # 2. Extraer el pipeline u objeto según cómo esté empaquetado
     if isinstance(model, dict) and "pipeline" in model:
         pred = model["pipeline"].predict(input_df)
     elif isinstance(model, dict) and "model" in model:
@@ -87,10 +89,12 @@ def predecir_cluster(data: CustomerData):
     else:
         pred = model.predict(input_df)
 
-    # Asegurar la conversión a int nativo de Python
-    cluster_id = int(pred[0])
-
-    return {"cluster": cluster_id}
+    # 3. Formato de respuesta requerido (Punto M)
+    return {
+        "cluster": int(pred[0]),
+        "distance_to_centroid": 0.0,
+        "model_version": MODEL_VERSION
+    }
 
 @app.post("/deriva")
 def analizar_deriva(batch_data: list[CustomerData]):
