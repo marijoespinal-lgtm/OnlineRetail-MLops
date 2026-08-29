@@ -1,3 +1,4 @@
+import os
 import pandas as pd
 import numpy as np
 from pathlib import Path
@@ -5,10 +6,10 @@ from pathlib import Path
 def pollute_dataset(input_path: str, output_path: str) -> None:
     path_in = Path(input_path)
     if not path_in.exists():
-        raise FileNotFoundError(f"❌ No se encontró el dataset limpio en: {input_path}")
+        raise FileNotFoundError(f"No se encontró el dataset limpio en: {input_path}")
 
     df = pd.read_csv(path_in)
-    print(f"📊 Dataset limpio cargado ({len(df)} filas). Contaminando...")
+    print(f"Dataset limpio cargado ({len(df)} filas). Contaminando...")
 
     # Muestra representativa para la simulación
     df_corrupted = df.sample(n=min(1000, len(df)), random_state=42).copy()
@@ -38,12 +39,24 @@ def pollute_dataset(input_path: str, output_path: str) -> None:
     path_out.parent.mkdir(parents=True, exist_ok=True)
     df_corrupted.to_csv(path_out, index=False)
 
-    print(f"⚠️ Dataset contaminado guardado con éxito en: {output_path}")
+    print(f"Dataset contaminado guardado con éxito en: {output_path}")
 
 if __name__ == "__main__":
+    # Generar el archivo contaminado
     pollute_dataset(
         input_path="data/clean/online_retail_clean.csv",
         output_path="data/corrupted/online_retail_corrupted.csv"
     )
-    Dataset limpio cargado (392557 filas). Contaminando...
-⚠️ Dataset contaminado guardado con éxito en: data/corrupted/online_retail_corrupted.csv
+
+    # Intentar ejecutar la validación automática
+    try:
+        from src.quality.validate import validate_dataset
+        print("\n[EJECUTANDO VALIDACION DE CALIDAD]")
+        resultados = validate_dataset("data/corrupted/online_retail_corrupted.csv")
+        
+        if not resultados.get("success", False):
+            print("\n[BLOQUEADO] El pipeline rechazó exitosamente el lote contaminado.")
+            print(f"Errores registrados: {resultados.get('failed_expectations', 'Errores detectados')}")
+    except ImportError:
+        print("\n[OK] El dataset contaminado se generó correctamente en 'data/corrupted/online_retail_corrupted.csv'.")
+        print("Puedes ejecutar tu suite de pruebas de validación directamente sobre este nuevo archivo.")
