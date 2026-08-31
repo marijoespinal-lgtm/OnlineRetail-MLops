@@ -2,14 +2,6 @@
 
 Este proyecto implementa una solución end-to-end de MLOps para la segmentación de clientes mediante clustering y el monitoreo en tiempo real de la deriva de datos (Data Drift) utilizando FastAPI, Docker y MLflow.
 
-## Business Problem 
-
-## Dataset 
-
-
-
-Infraestructura *end-to-end* de MLOps para la segmentación de clientes (Clustering RFM) y monitoreo de deriva de datos (*Data Drift*) en tiempo real con el dataset Online Retail.
-
 ---
 
 ## 1. Business Problem
