@@ -5,6 +5,7 @@ import pandas as pd
 import numpy as np
 import os
 import time
+from pydantic import BaseModel, Field
 
 
 app = FastAPI(
@@ -37,9 +38,9 @@ async def track_system_metrics(request: Request, call_next):
 
 # Definición del esquema de entrada según feature_schema.json
 class CustomerData(BaseModel):
-    recency: float
-    frequency: float
-    monetary: float
+    recency: float = Field(..., ge=0, le=10000, description="Días desde la última compra (0 a 10000)")
+    frequency: float = Field(..., ge=0, le=10000, description="Frecuencia de compras (0 a 10000)")
+    monetary: float = Field(..., ge=0, le=10000, description="Monto total gastado (0 a 10000)")
    
 
 # Rutas de los artefactos del modelo y dataset baseline
