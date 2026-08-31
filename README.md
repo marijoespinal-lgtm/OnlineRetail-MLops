@@ -1,5 +1,11 @@
 # Online Retail MLOps Pipeline 🚀
 
+## Business Problem 
+
+## Dataset 
+
+
+
 Infraestructura *end-to-end* de MLOps para la segmentación de clientes (Clustering RFM) y monitoreo de deriva de datos (*Data Drift*) en tiempo real con el dataset Online Retail.
 
 ---
