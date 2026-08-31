@@ -1,64 +1,140 @@
-# Online Retail MLOps Pipeline 🚀
+# Online Retail MLOps Project: Segmentación de Clientes y Monitoreo de Deriva
 
-Infraestructura *end-to-end* de MLOps para la segmentación de clientes (Clustering RFM) y monitoreo de deriva de datos (*Data Drift*) en tiempo real con el dataset Online Retail.
+Este proyecto implementa una solución end-to-end de MLOps para la segmentación de clientes mediante clustering y el monitoreo en tiempo real de la deriva de datos (Data Drift) utilizando FastAPI, Docker y MLflow.
 
 ---
 
-## 🛠️ Estructura del Proyecto
+## 1. Business Problem
+El objetivo de este proyecto es segmentar a los clientes de una plataforma de comercio electrónico en función de su comportamiento de compra (métricas RFM: Recency, Frequency, Monetary). Esto permite personalizar estrategias de marketing y detectar de forma temprana el deterioro en el rendimiento del modelo debido a cambios en el comportamiento de los datos.
+
+## 2. Dataset
+Se utiliza el dataset público **Online Retail**, el cual contiene transacciones de compras realizadas entre 2010 y 2011. A partir de estas transacciones se construyen las características RFM principales:
+* **Recency:** Días transcurridos desde la última compra.
+* **Frequency:** Número total de transacciones realizadas.
+* **Monetary:** Monto total gastado por el cliente.
+
+## 3. Architecture
+La arquitectura del proyecto sigue el siguiente flujo de MLOps:
+1. **Ingesta y Limpieza de Datos:** Procesamiento de datos crudos en la tubería de Python.
+2. **Entrenamiento y Tracking:** Entrenamiento del modelo de clustering e ingeniería de variables registrando métricas y artefactos en **MLflow**.
+3. **Contenedorización:** Empaquetado del servicio web utilizando **Docker**.
+4. **Despliegue de API:** Exposición de endpoints REST mediante **FastAPI** para inferencia y monitoreo.
+5. **Monitoreo (Data Drift):** Evaluación del Population Stability Index (PSI) para detectar variaciones de distribución.
+
+## 4. Repository Structure
 
 ```text
-OnlineRetail-MLops/
-├── .github/
-│   └── workflows/
-│       └── ci.yml             # Pipeline de CI/CD (GitHub Actions)
+.
+├── data/                    # Datos crudos y procesados
 ├── src/
-│   ├── api/
-│   │   └── app.py             # Servidor de inferencia FastAPI (/health, /predict, /drift)
-│   └── monitoring/
-│       └── drift_detector.py  # Motor de monitoreo y cálculo de PSI
-├── tests/
-│   ├── test_api.py            # Pruebas unitarias para los endpoints
-│   └── test_monitoring.py     # Pruebas unitarias para la detección de drift
-├── Dockerfile                 # Contenedorización de la aplicación
-├── pytest.ini                 # Configuración de pytest
-├── requirements.txt           # Dependencias del proyecto
-└── README.md                  # Documentación
+│   ├── api/                 # Definición de la API con FastAPI (app.py)
+│   ├── features/            # Scripts para construcción e ingeniería de variables
+│   ├── ingestion/           # Scripts de ingesta de datos (ingest.py)
+│   ├── models/              # Scripts de entrenamiento y validación (train.py, validation.py)
+│   ├── monitoring/          # Detector de deriva de datos (drift_detector.py)
+│   └── quality/             # Módulos de limpieza y calidad (clean.py, contamination.py)
+├── Dockerfile               # Configuración para contenedorización
+├── requirements.txt         # Dependencias del proyecto
+└── README.md                # Documentación del proyecto
+```
 
-## Pasos para iniciar 
-1. Clonar e instalar dependencias
-git clone [https://github.com/marijoespinal-lgtm/OnlineRetail-MLops.git](https://github.com/marijoespinal-lgtm/OnlineRetail-MLops.git)
+## 5. Installation
+Clona este repositorio y configura el entorno local:
+
+```bash
+git clone https://github.com/marijoespinal-lgtm/OnlineRetail-MLops.git
 cd OnlineRetail-MLops
+python -m venv venv
+# En Windows (PowerShell):
+.\venv\Scripts\Activate.ps1
+# Instalar dependencias:
 pip install -r requirements.txt
+```
 
-2. Ejecutar la API
-uvicorn src.api.app:app --reload --port 8000
+## 6. Data Ingestion
+Ejecuta el script de ingesta de datos para procesar el dataset original de Online Retail y generar el conjunto de datos limpio con las métricas RFM (Recency, Frequency, Monetary):
 
-🐳 Despliegue con Docker
-# Construir la imagen
-docker build -t online-retail-api .
+```bash
+python src/ingestion/ingest.py
+```
 
-# Ejecutar el contenedor
-docker run -p 8000:8000 online-retail-api
+## 7. Training
+Ejecuta el script de entrenamiento para procesar las variables RFM, entrenar el modelo de segmentación de clientes y guardar los artefactos generados:
 
-🧪 Pruebas Unitarias y CI/CD
-Para ejecutar las pruebas locales con pytest:
-pytest
+```bash
+# Entrenar el modelo
+python src/models/train.py
 
-Método,Endpoint,Descripción
-GET,/health,Verifica el estado del servicio y la carga del modelo/baseline
-POST,/predict,Recibe métricas RFM y clasifica al cliente en un clúster
-POST,/drift,Recibe registros recientes y calcula el PSI contra el dataset baseline
+# Validar el modelo
+python src/models/validation.py
+```
 
-## 📌 Endpoints de la API
+## 8. MLflow & Experiment Tracking
+Para iniciar la interfaz de usuario de MLflow y revisar las métricas, parámetros y experimentos registrados durante el entrenamiento del modelo:
 
-| Método | Endpoint | Descripción |
-| :--- | :--- | :--- |
-| **GET** | `/health` | Verifica el estado del servicio y la carga del modelo/baseline |
-| **POST** | `/predict` | Recibe métricas RFM y clasifica al cliente en un clúster |
-| **POST** | `/drift` | Recibe registros recientes y calcula el PSI contra el dataset baseline |
+```bash
+mlflow ui
+```
+Una vez ejecutado el comando, abre tu navegador en http://127.0.0.1:5000 para acceder al panel interactivo de MLflow.
 
-## 📊 Monitoreo del Sistema (3 Dimensiones)
 
-1. **Data Drift (Covariate Shift):** Monitoreado en tiempo real a través del endpoint `/drift` utilizando el cálculo del **Population Stability Index (PSI)** sobre las variables de entrada.
-2. **Concept Drift:** Se evalúa periódicamente re-calculando la métrica de **Silhouette Score / Inercia** sobre lotes de datos de producción retenidos para detectar si los clústeres han perdido separación o significancia de negocio.
-3. **System Performance:** Monitoreado a través del endpoint `/health`, verificando tiempo de respuesta (latencia) y disponibilidad del contenedor Docker.
+## 9. Docker Support
+Para empaquetar y desplegar la aplicación mediante contenedores de Docker, ejecuta los siguientes comandos en la raíz del proyecto:
+
+```bash
+# Construir la imagen de Docker:
+docker build -t online-retail-mlops .
+
+# Ejecutar el contenedor expuesto en el puerto 8000:
+docker run -d -p 8000:8000 --name online-retail-app online-retail-mlops
+```
+Una vez iniciado el contenedor, la API y sus endpoints estarán disponibles en http://localhost:8000/docs.
+
+## 10. API & Endpoints
+Inicia el servidor local de FastAPI para exponer los endpoints de inferencia y segmentación de clientes:
+
+```bash
+uvicorn src.api.app:app --reload
+```
+Una vez en ejecución, la API estará disponible en http://127.0.0.1:8000 y la documentación interactiva (Swagger UI) se puede consultar en:
+
+http://127.0.0.1:8000/docs
+
+## 11. Data Drift Monitoring
+Para evaluar la deriva de datos (Data Drift) y la estabilidad de las distribuciones mediante el indicador Population Stability Index (PSI):
+
+```bash
+# Ejecutar el monitoreo de Data Drift
+python -m src.monitoring.drift_detector
+```
+
+## 12. Results 
+A continuación se resumen los resultados obtenidos en las diferentes etapas del flujo de trabajo de MLOps:
+
+* **Segmentación de Clientes (RFM & Clustering):** Se identificaron segmentos claros de comportamiento de compra basados en Recency, Frequency y Monetary, permitiendo categorizar a los usuarios en grupos de alto valor, recurrentes y en riesgo de abandono.
+* **Evaluación de Data Drift (PSI):** Las métricas del Population Stability Index permitieron detectar variaciones en las distribuciones de las características a lo largo del tiempo, asegurando alertas tempranas ante cambios en el comportamiento de los datos.
+* **Despliegue y Productivización:** Se logró empaquetar el flujo en un servicio FastAPI funcional y containerizado en Docker, garantizando inferencias rápidas y consistentes.
+
+## 13. Team & Authors
+Este proyecto fue desarrollado por:
+
+* **María Espinoza— Data Engineer & Quality Lead**
+  * **Rol y Enfoque:** Garantizar la ingesta automática, limpieza, validación y robustez de los datos en el pipeline.
+  * **Contribuciones Clave:**
+    * Ingesta reproducible desde UCI Online Retail (`src/ingestion/ingest.py`).
+    * Implementación de limpieza de datos, reglas de validación y Quality Gates (`src/quality/clean.py` y `src/quality/validation.py`).
+    * Desarrollo del script de simulación de contaminación de datos (`src/quality/contamination.py`).
+
+* **Enrique Segura — Machine Learning & Feature Engineer**
+  * **Rol y Enfoque:** Transformar datos transaccionales en perfiles de clientes y desarrollar/evaluar el pipeline de modelado.
+  * **Contribuciones Clave:**
+    * Análisis exploratorio (EDA) y pipeline de ingeniería de variables RFM ampliadas y comportamentales (`src/features/build_features.py`).
+    * Entrenamiento de algoritmos de clustering (K-Means, DBSCAN, Agglomerative) y registro de métricas/artefactos en MLflow (`src/models/train.py`).
+    * Configuración del Model Registry para la promoción del modelo a estado "Production".
+
+* **Joselyn Herrera — MLOps, API & Monitoring Engineer**
+  * **Rol y Enfoque:** Despliegue de la solución, containerización, automatización de pruebas y observabilidad/monitoreo del modelo.
+  * **Contribuciones Clave:**
+    * Desarrollo de la API REST con FastAPI para inferencia de clusters (`src/api/app.py`).
+    * Empaquetado y containerización de la aplicación mediante Docker (`Dockerfile`).
+    * Pruebas unitarias/integración con Pytest y sistema de detección de Data Drift mediante Population Stability Index (PSI) (`src/monitoring/drift_detector.py`).
