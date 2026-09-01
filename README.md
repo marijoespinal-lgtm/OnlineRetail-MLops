@@ -23,19 +23,28 @@ La arquitectura del proyecto sigue el siguiente flujo de MLOps:
 
 ## 4. Repository Structure
 
+
 ```text
 .
-├── data/                    # Datos crudos y procesados
-├── src/
-│   ├── api/                 # Definición de la API con FastAPI (app.py)
-│   ├── features/            # Scripts para construcción e ingeniería de variables
-│   ├── ingestion/           # Scripts de ingesta de datos (ingest.py)
-│   ├── models/              # Scripts de entrenamiento y validación (train.py, validation.py)
-│   ├── monitoring/          # Detector de deriva de datos (drift_detector.py)
-│   └── quality/             # Módulos de limpieza y calidad (clean.py, contamination.py)
-├── Dockerfile               # Configuración para contenedorización
-├── requirements.txt         # Dependencias del proyecto
-└── README.md                # Documentación del proyecto
+├── data/                    # [Entregable 3] Datos crudos y procesados (data/raw/, data/processed/)
+├── src/                     
+│   ├── api/                 
+│   │   └── app.py           # [Entregable 8] Endpoint POST /predict con FastAPI
+│   ├── features/            
+│   │   └── build_features.py # [Entregable 4-5] Pipeline de ingeniería de características
+│   ├── ingestion/           
+│   │   └── ingest.py        # [Entregable 3] Scripts de ingesta de datos
+│   ├── models/              
+│   │   └── train.py         # [Entregable 5-6] Entrenamiento, validación y registro en MLflow
+│   ├── monitoring/          
+│   │   └── drift_detector.py # [Entregable 10-11] Cálculo de PSI y detección de deriva
+│   └── quality/             
+│       └── clean.py         # [Entregable 2] Módulos de limpieza y calidad de datos
+├── mlruns/                  # [Entregable 6] Tracking de experimentos, métricas y artefactos de MLflow
+├── tests/                   # [Entregable 9] Pruebas automatizadas (pytest)
+├── Dockerfile               # [Entregable 7] Contenedorización de la aplicación
+├── requirements.txt         # [Entregable 1] Dependencias y gestión de paquetes
+└── README.md                # [Entregable 2, 12, 13] Documentación, guía e informe técnico
 ```
 
 ## 5. Installation
