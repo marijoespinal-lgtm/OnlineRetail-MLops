@@ -138,3 +138,7 @@ Este proyecto fue desarrollado por:
     * Desarrollo de la API REST con FastAPI para inferencia de clusters (`src/api/app.py`).
     * Empaquetado y containerización de la aplicación mediante Docker (`Dockerfile`).
     * Pruebas unitarias/integración con Pytest y sistema de detección de Data Drift mediante Population Stability Index (PSI) (`src/monitoring/drift_detector.py`).
+
+    ## Arquitectura del Proyecto
+
+![Figura 1: Arquitectura del Pipeline MLOps](img/image.png)
