@@ -141,4 +141,4 @@ Este proyecto fue desarrollado por:
 
     ## Arquitectura del Proyecto
 
-![Figura 1: Arquitectura del Pipeline MLOps](img/arquitectura_mlops.png)
+![Figura 1: Arquitectura del Pipeline MLOps](img/arquitectura.png)
