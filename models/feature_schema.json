@@ -1,5 +1,5 @@
 {
-  "model_version": "3",
+  "model_version": "5",
   "feature_set": "RFM",
   "required_input_columns": [
     "recency",
