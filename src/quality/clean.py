@@ -59,6 +59,6 @@ def clean_online_retail():
 if __name__ == "__main__":
     clean_online_retail()
 
---La explicación de cada paso de limpieza se encuentra argumentada en el 
---notebook "eda and cleaning.ipynb" 
+#La explicación de cada paso de limpieza se encuentra argumentada en el 
+#notebook "eda and cleaning.ipynb" 
 
