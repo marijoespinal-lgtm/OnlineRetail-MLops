@@ -1,7 +1,7 @@
 """
 train.py
 --------
-ML & Experiment Tracking.
+ML & Experiment Tracking
 
 Compara clustering usando 3 conjuntos de variables (RFM / RFM+ /
 Behavioral, definidos en src/features/feature_sets.py) x 3 algoritmos
