@@ -1,7 +1,7 @@
 """
 train.py
 --------
-Integrante 2 - ML & Experiment Tracking
+ML & Experiment Tracking
 
 Compara clustering usando 3 conjuntos de variables (RFM / RFM+ /
 Behavioral, definidos en src/features/feature_sets.py) x 3 algoritmos
@@ -125,6 +125,22 @@ def run_experiment(name, model, X, df_raw, feature_set_name, feature_set_cols_ra
         # Artifact: modelo
         mlflow.sklearn.log_model(model, artifact_path="model")
 
+        # Artifact: configuracion completa de esta corrida (la "ficha
+        # tecnica" -- responde de un solo archivo la pregunta de la
+        # seccion J sobre que datos/features/hiperparametros la produjeron)
+        config = {
+            "algorithm": name.split("__")[0],
+            "feature_set": feature_set_name,
+            "feature_columns": feature_set_cols_raw,
+            "hyperparameters": params,
+            "random_seed": RANDOM_SEED,
+            "data_version": DATA_VERSION,
+        }
+        config_path = f"{tempfile.gettempdir()}/config_{name}.json"
+        with open(config_path, "w") as f:
+            json.dump(config, f, indent=2)
+        mlflow.log_artifact(config_path, artifact_path="configuration")
+
         logger.info(
             "%s -> silhouette=%s, davies_bouldin=%s, clusters=%s",
             name, sil, db, n_clusters_found,
@@ -193,6 +209,7 @@ def main():
     sorted_candidates = sorted(promotable_run_ids, key=lambda r: results[r], reverse=True)
 
     champion_run_id = None
+    rejected_log = []
     for run_id in sorted_candidates:
         sil = results[run_id]
         model, labels, feature_set_name, raw_cols, algorithm = run_info[run_id]
@@ -204,6 +221,7 @@ def main():
         if passed:
             champion_run_id = run_id
             break
+        rejected_log.append(f"{algorithm}_{feature_set_name} (sil={sil:.4f}): {'; '.join(reasons)}")
         logger.warning(
             "Candidato run %s RECHAZADO en validacion, probando el siguiente. Motivos: %s",
             run_id, reasons,
@@ -239,6 +257,19 @@ def main():
         archive_existing_versions=True,
     )
     logger.info("Modelo version %s registrado y promovido a Production", registered.version)
+
+    # --- Alias y tags (forma moderna recomendada por MLflow, ademas del
+    # stage viejo de arriba que ya esta deprecado mas no eliminado) ---
+    client.set_registered_model_alias(MODEL_REGISTRY_NAME, "champion", registered.version)
+    client.set_model_version_tag(MODEL_REGISTRY_NAME, registered.version, "validation_status", "approved")
+    client.set_model_version_tag(MODEL_REGISTRY_NAME, registered.version, "feature_set", best_feature_set)
+    if rejected_log:
+        # Solo el primer candidato rechazado (el de mejor silhouette entre los
+        # descartados) para no exceder limites de tamano del tag.
+        client.set_model_version_tag(
+            MODEL_REGISTRY_NAME, registered.version, "top_rejected_candidate", rejected_log[0]
+        )
+    logger.info("Alias 'champion' y tags de documentacion asignados a la version %s", registered.version)
 
     # --- Empaquetar TODO junto: scaler + feature_set + modelo + labels ---
     # (un solo artefacto, en vez de repartir scaler/modelo por separado,
